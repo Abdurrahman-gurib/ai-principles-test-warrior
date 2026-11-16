@@ -29,7 +29,7 @@ function updateBar(){const o=overall(),el=$('#gprog');if(!el)return;$('i',el).st
   $('span',el).textContent=`📈 Progress ${o.pct}% · ${o.topics}/${T.length} topics complete · ${o.md}/${MOCKS.length} mocks done`}
 
 /* ---------- nav ---------- */
-const EXTRA=[['lab','🧮','Calculation Lab','#0f766e'],['allquiz','⚡','Quick-fire quiz (all)','#9333ea'],...MOCKS.map((m,i)=>['mock'+(i+1),'📝',m.title,'#be123c']),['plan','📅','4-Day plan','#16a34a'],['cheat','📌','Cheat sheet','#ca8a04'],['search','🔎','Search notes','#475569']];
+const EXTRA=[['papers','📜','Real past papers','#b45309'],['arena','🧠','Quiz Arena (all topics)','#9333ea'],['lab','🧮','Calculation Lab','#0f766e'],...MOCKS.map((m,i)=>['mock'+(i+1),'📝',m.title,'#be123c']),['plan','📅','4-Day plan','#16a34a'],['cheat','📌','Cheat sheet','#ca8a04'],['search','🔎','Search notes','#475569']];
 function buildNav(){
   const h=location.hash||'#/home';
   let s=`<a href="#/home" class="${h==='#/home'?'active':''}" style="--c:#e11d48"><span>🏠</span>Home</a><div class="grp">Topics</div>`;
@@ -72,7 +72,7 @@ function Player(root,topic){
   vo.onclick=()=>{store.set('voiceOn',!store.get('voiceOn',true));paintVo();if(playing){halt();speakNext()}};
   rate.onchange=()=>store.set('rate',rate.value);
   function render(){const s=sc[i];$('.scn',st).textContent=`${topic.title} · scene ${i+1}/${sc.length}`;$('h3',st).textContent=s.t;$('.big',st).textContent=s.e;
-    $('.chips',st).innerHTML=s.v.map(c=>`<div class="chip">${esc(c)}</div>`).join('');
+    $('.chips',st).innerHTML=(s.svg?`<div class="sv">${s.svg}</div>`:'')+s.v.map(c=>`<div class="chip">${esc(c)}</div>`).join('');st.classList.toggle('withsv',!!s.svg);
     $$('.dots button',root).forEach((b,n)=>b.classList.toggle('on',n===i));reveal();progress()}
   function reveal(){const chips=$$('.chip',st),S=sc[i].s.length,show=Math.min(chips.length,Math.ceil((k+1)/S*chips.length));
     chips.forEach((c,n)=>{c.classList.toggle('show',n<show);c.classList.toggle('hl',n===show-1&&playing)})}
@@ -127,11 +127,11 @@ function renderBlocks(blocks,onlyQA){
   while(i<blocks.length){
     const b=blocks[i];
     if(b.k==='q'){
-      qn++;let ans='';i++;
-      while(i<blocks.length&&!['q','h2','h3'].includes(blocks[i].k)){ans+=blockHTML(blocks[i]);i++}
+      qn++;let ans='',pre='';i++;
+      while(i<blocks.length&&!['q','h2','h3'].includes(blocks[i].k)){if(blocks[i].pre)pre+=blockHTML(blocks[i]);else ans+=blockHTML(blocks[i]);i++}
       const qt=b.t.replace(/^Q\d+\.\s*/,'');
       out+=`<div class="qa"><div class="q"><span>Q${qn}.</span><span>${qt}</span>${b.m?`<span class="m pill">${b.m} mk</span>`:''}</div>
-        <button class="btn sm ghost rv">👀 Show / hide answer</button><div class="ans">${ans}</div></div>`;
+        ${pre?`<div class="qfig">${pre}</div>`:''}<button class="btn sm ghost rv">👀 Show / hide answer</button><div class="ans">${ans}</div></div>`;
       continue;
     }
     if(!onlyQA)out+=blockHTML(b);else if(b.k==='h2'){let j=i+1,has=false;while(j<blocks.length&&blocks[j].k!=='h2'){if(blocks[j].k==='q'){has=true;break}j++}if(has)out+=blockHTML(b)}
@@ -146,13 +146,46 @@ function practiceSwitch(root){
 function wirePractice(root,box){const sw=$('.hidesw',root);const f=()=>{box.classList.toggle('hideall',sw.checked);store.set('hideAns',sw.checked);$$('.ans',box).forEach(a=>{a.classList.remove('hide','open')})};sw.onchange=f;f()}
 
 /* ---------- quiz ---------- */
-function quizHTML(qs,id){return `<div class="quiz">${qs.map((q,n)=>`<div class="card qz" data-a="${q.a}"><b>${n+1}. ${q.q}</b>${q.o.map((o,j)=>`<button class="opt" data-j="${j}">${String.fromCharCode(65+j)}. ${esc(o)}</button>`).join('')}<div class="x">💡 ${q.x}</div></div>`).join('')}
+const LET=j=>String.fromCharCode(65+j);
+function quizHTML(qs,id){return `<div class="quiz"><div class="card qstat"><b>🧠 ${qs.length} questions.</b> Tap an answer: you get ✅/❌ and the explanation instantly. <span class="live"></span></div>${qs.map((q,n)=>`<div class="card qz" data-a="${q.a}"><b>${n+1}. ${q.q}</b>${q.o.map((o,j)=>`<button class="opt" data-j="${j}">${LET(j)}. ${esc(o)}</button>`).join('')}<div class="fb"></div></div>`).join('')}
  <div class="card"><span class="score">Score: <span class="sc">0</span> / ${qs.length}</span> <button class="btn sm ghost redo">↻ Retry</button></div></div>`}
+function feedback(c,q,j){const ok=j===q.a;c.classList.add('answered',ok?'got':'miss');const fb=$('.fb',c);
+  fb.className='fb '+(ok?'good':'bad');fb.innerHTML=(ok?'✅ <b>Correct!</b> ':`❌ <b>Wrong.</b> You chose ${LET(j)}. The correct answer is <b>${LET(q.a)}. ${esc(q.o[q.a])}</b>. `)+`<br>💡 ${q.x}`;
+  const btns=$$('.opt',c);btns[q.a].classList.add('right');if(!ok)btns[j].classList.add('wrong');btns.forEach(b=>b.disabled=true);return ok}
 function wireQuiz(root,qs,id){let right=0,ans=0;
-  $$('.qz',root).forEach(c=>{$$('.opt',c).forEach(b=>b.onclick=()=>{if(c.classList.contains('answered'))return;c.classList.add('answered');ans++;const a=+c.dataset.a,j=+b.dataset.j;
-    $$('.opt',c)[a].classList.add('right');if(j!==a)b.classList.add('wrong');else right++;$('.sc',root).textContent=right;
-    if(ans===qs.length&&id){const p=Math.round(right/qs.length*100);if(p>prog(id).quiz)setProg(id,{quiz:p});$('.sc',root).textContent=`${right} (${p}%)${p>=80?' 🏆 Great!':' - retry to reach 80%'}`}})});
+  $$('.qz',root).forEach((c,n)=>{$$('.opt',c).forEach(b=>b.onclick=()=>{if(c.classList.contains('answered'))return;ans++;if(feedback(c,qs[n],+b.dataset.j))right++;
+    $('.sc',root).textContent=right;$('.live',root).textContent=`Answered ${ans}/${qs.length} · correct ${right}`;
+    if(ans===qs.length){const p=Math.round(right/qs.length*100);if(id&&p>prog(id).quiz)setProg(id,{quiz:p});$('.sc',root).textContent=`${right} (${p}%)${p>=80?' 🏆 Great!':' - retry to reach 80%'}`}})});
   $('.redo',root).onclick=()=>{root.innerHTML=quizHTML(qs,id);wireQuiz(root,qs,id)}}
+
+/* ---------- Quiz Arena: one question at a time ---------- */
+function arena(){setColor('#9333ea');const all=T.flatMap(t=>t.quiz.map(q=>Object.assign({},q,{tid:t.id,tn:t.short,te:t.emoji})));
+  const best=store.get('arenaBest',null);
+  main.innerHTML=`<div class="hero" style="--c:#9333ea"><h1>🧠 Quiz Arena</h1><p>${all.length} questions across every topic. One at a time, instant ✅/❌ with explanation, then review your mistakes.${best!=null?` Best score: ${best}%.`:''}</p></div><div id="ar"></div>`;
+  const ar=$('#ar');
+  const setup=()=>{ar.innerHTML=`<div class="card"><h2>1. Choose topics</h2><div class="row"><button class="btn sm ghost" id="aall">All</button><button class="btn sm ghost" id="anone">None</button></div>
+    <div class="grid" style="margin-top:8px">${T.map(t=>`<label class="check"><input type="checkbox" class="tp" value="${t.id}" checked><span>${t.emoji} ${t.short} <small class="muted">(${t.quiz.length})</small></span></label>`).join('')}</div>
+    <h2 style="margin-top:14px">2. How many questions?</h2><div class="row">${[10,20,40,0].map(n=>`<label class="row"><input type="radio" name="an" value="${n}" ${n===20?'checked':''}> ${n||'All'}</label>`).join('')}</div>
+    <label class="row" style="margin-top:10px"><input type="checkbox" id="ash" checked> Shuffle questions</label>
+    <button class="btn" id="ago" style="margin-top:12px">▶ Start quiz</button></div>`;
+    $('#aall').onclick=()=>$$('.tp').forEach(x=>x.checked=true);$('#anone').onclick=()=>$$('.tp').forEach(x=>x.checked=false);
+    $('#ago').onclick=()=>{const ids=$$('.tp').filter(x=>x.checked).map(x=>x.value);if(!ids.length)return alert('Choose at least one topic');
+      let qs=all.filter(q=>ids.includes(q.tid));if($('#ash').checked)qs=qs.map(q=>[Math.random(),q]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);const n=+$('input[name=an]:checked').value;if(n)qs=qs.slice(0,n);run(qs)}};
+  const run=(qs)=>{let i=0,right=0;const wrong=[];
+    const show=()=>{const q=qs[i];ar.innerHTML=`<div class="card"><div class="row" style="justify-content:space-between"><span class="pill">${q.te} ${esc(q.tn)}</span><b>Question ${i+1} / ${qs.length} · ✅ ${right} · ❌ ${wrong.length}</b></div>
+      <div class="bar" style="margin:10px 0"><i style="width:${i/qs.length*100}%;background:#9333ea"></i></div><div class="qz" style="margin:0"><b style="font-size:1.08rem">${q.q}</b>${q.o.map((o,j)=>`<button class="opt" data-j="${j}">${LET(j)}. ${esc(o)}</button>`).join('')}<div class="fb"></div></div>
+      <div class="row" style="margin-top:10px"><button class="btn" id="anext" disabled>${i<qs.length-1?'Next ▶':'See results 🏁'}</button><button class="btn sm ghost" id="aquit">✖ Stop</button></div></div>`;
+      const c=$('.qz',ar);$$('.opt',c).forEach(b=>b.onclick=()=>{if(c.classList.contains('answered'))return;const ok=feedback(c,q,+b.dataset.j);if(ok)right++;else wrong.push(Object.assign({chosen:+b.dataset.j},q));$('#anext').disabled=false;$('#anext').focus()});
+      $('#anext').onclick=()=>{i++;i<qs.length?show():done()};$('#aquit').onclick=()=>done()};
+    const done=()=>{const tot=right+wrong.length,p=tot?Math.round(right/tot*100):0;if(tot>=10&&p>(store.get('arenaBest',0)||0))store.set('arenaBest',p);
+      const byT={};qs.slice(0,tot).forEach(q=>{byT[q.tn]=byT[q.tn]||[0,0];byT[q.tn][1]++});qs.slice(0,tot).forEach(q=>{if(!wrong.includes(q)&&!wrong.some(w=>w.q===q.q))byT[q.tn][0]++});
+      ar.innerHTML=`<div class="card"><h2>🏁 Result: ${right} / ${tot} (${p}%) ${p>=80?'🏆 Exam-ready!':p>=60?'👍 Good, fix the mistakes below':'📚 Review the topics below'}</h2>
+       <div class="tblwrap"><table><tr><th>Topic</th><th>Score</th></tr>${Object.entries(byT).map(([k,[a,b]])=>`<tr><td>${esc(k)}</td><td>${a}/${b}</td></tr>`).join('')}</table></div>
+       <div class="row"><button class="btn" id="aretry" ${wrong.length?'':'disabled'}>↻ Retry my ${wrong.length} wrong answers</button><button class="btn ghost" id="anew">New quiz</button></div></div>
+       ${wrong.length?`<div class="card"><h2>❌ Review your mistakes</h2>${wrong.map(w=>`<div class="qa"><div class="q"><span class="pill">${esc(w.tn)}</span><span>${w.q}</span></div><div class="ans"><p>You chose <b>${LET(w.chosen)}. ${esc(w.o[w.chosen])}</b> ✗<br>Correct: <b>${LET(w.a)}. ${esc(w.o[w.a])}</b> ✓<br>💡 ${w.x}</p></div></div>`).join('')}</div>`:''}`;
+      $('#anew').onclick=setup;if(wrong.length)$('#aretry').onclick=()=>run(wrong.map(w=>{const c=Object.assign({},w);delete c.chosen;return c}))};
+    show()};
+  setup()}
 
 /* ---------- flashcards ---------- */
 function cardsUI(root,cards,color){let i=0,order=cards.map((_,n)=>n);
@@ -222,6 +255,18 @@ function topic(id,tab){
   else if(tab==='cards'){pane.innerHTML='<div class="card"></div>';cardsUI($('.card',pane),t.cards,t.color)}
 }
 
+function papers(){setColor('#b45309');const P=window.PAPERS||[];
+  main.innerHTML=`<div class="hero" style="--c:#b45309"><h1>📜 Real past papers & exercise sheets</h1><p>Every question from your folder (Sample Test 2025 and the exercise sheets): narrated video walkthrough with diagrams, plus full step-by-step answers.</p></div>
+  <div class="grid">${P.map(x=>{const st=store.get('pp:'+x.id,{});return `<a class="tile" href="#/paper/${x.id}" style="--c:${x.color}"><div class="em">${x.emoji}</div><b>${x.title}</b><small>${x.blocks.filter(b=>b.k==='q').length} questions · ${x.scenes.length} video scenes${st.seen?' · ✓ opened':''}</small><br><small class="muted">${esc(x.src)}</small></a>`}).join('')}</div>`}
+function paper(id,tab){const P=(window.PAPERS||[]).find(x=>x.id===id);if(!P)return papers();setColor(P.color);tab=tab==='qa'?'qa':'video';store.set('pp:'+id,{seen:true});
+  main.innerHTML=`<div class="hero" style="--c:${P.color}"><h1>${P.emoji} ${P.title}</h1><p>${P.intro} · source: ${esc(P.src)}</p></div>
+   <div class="tabs"><button data-k="video" class="${tab==='video'?'on':''}">🎬 Video walkthrough</button><button data-k="qa" class="${tab==='qa'?'on':''}">📝 Questions & answers</button><a class="btn sm ghost" href="#/papers" style="margin-left:auto">← All papers</a></div><div id="pane"></div>`;
+  $$('.tabs button',main).forEach(b=>b.onclick=()=>{location.hash=`#/paper/${id}/${b.dataset.k}`});const pane=$('#pane');
+  if(tab==='video'){activePlayer=Player(pane,{id:'paper-'+P.id,title:P.title,color:P.color,scenes:P.scenes})}
+  else{pane.innerHTML=(P.timer?`<div class="card row"><span class="timer" id="tm">60:00</span><button class="btn" id="tgo">▶ Start 60-min timer</button><span class="muted">Sit it like the real test</span></div>`:'')+`<div class="card notes">${practiceSwitch(pane)}<div class="nb">${renderBlocks(P.blocks,false)}</div></div>`;
+    const nb=$('.nb',pane);wireQA(nb);wirePractice(pane,nb);
+    if(P.timer){let left=3600,run=false,iv=null;const paint=()=>{$('#tm').textContent=`${String(Math.floor(left/60)).padStart(2,'0')}:${String(left%60).padStart(2,'0')}`};
+      $('#tgo').onclick=()=>{run=!run;$('#tgo').textContent=run?'⏸ Pause':'▶ Resume';if(run){iv=setInterval(()=>{left--;paint();if(left<=0){clearInterval(iv);alert('⏰ Time is up!')}},1000);window._mockIv=iv}else clearInterval(iv)}}}}
 function allquiz(){setColor('#9333ea');const qs=T.flatMap(t=>t.quiz.map(q=>Object.assign({},q,{q:`<span class="pill">${t.short}</span> ${q.q}`}))).sort(()=>Math.random()-.5).slice(0,20);
   main.innerHTML=`<div class="hero" style="--c:#9333ea"><h1>⚡ Quick-fire quiz</h1><p>20 random questions from all topics. Reload for a new set.</p></div><div id="qzz"></div>`;
   const r=$('#qzz');r.innerHTML=quizHTML(qs,null);wireQuiz(r,qs,null)}
@@ -268,6 +313,7 @@ function buildIndex(){if(IDX)return IDX;IDX=[];const add=(type,title,link,text)=
     (t.quick||[]).forEach(x=>add('Quick Q',t.title,L+'/quick',x[0]+' → '+x[1]));(t.scen||[]).forEach(x=>add('Scenario',t.title,L+'/scen',x[0]+' — '+x[1]));
     t.quiz.forEach(x=>add('Quiz',t.title,L+'/quiz',x.q+' → '+x.o[x.a]+'. '+x.x));t.cards.forEach(x=>add('Flashcard',t.title,L+'/cards',x[0]+': '+x[1]))});
   MOCKS.forEach((m,i)=>blocksText(m.blocks).forEach(x=>add('Mock test',m.title,'#/mock'+(i+1),x.tx)));
+  (window.PAPERS||[]).forEach(P=>{blocksText(P.blocks).forEach(x=>add('Past paper',P.title,'#/paper/'+P.id+'/qa',x.tx));P.scenes.forEach(x=>add('Past paper',P.title+' · '+x.t,'#/paper/'+P.id,x.t+' '+x.s.join(' ')))});
   [['A* greedy UCS Dijkstra BFS DFS search tracer f = g + h admissible','search'],['DFID iterative deepening depth limit','dfid'],['entropy information gain decision tree ID3 PlayTennis','entropy'],['perceptron learning rule AND OR NAND XOR threshold','perc'],['backpropagation sigmoid delta gradient XOR network','bp'],['simulated annealing temperature cooling acceptance probability','sa'],['genetic algorithm roulette crossover mutation fitness','ga'],['CSP forward checking graph colouring domains backtrack','csp'],['counting factorial search space TSP routes','count']].forEach(([tx,k])=>add('Calculator','Calculation Lab',`#/lab/${k}`,tx));
   add('Page','Cheat sheet','#/cheat','cheat sheet formula sheet all formulas');add('Page','4-Day plan','#/plan','plan schedule study days checklist');
   return IDX}
@@ -278,7 +324,7 @@ function snippet(r,q,len=170){const terms=q.toLowerCase().split(/\s+/).filter(x=
   const s0=Math.max(0,i-60);let sn=esc((s0?'…':'')+r.tx.slice(s0,s0+len)+(s0+len<r.tx.length?'…':''));
   terms.forEach(t=>{sn=sn.replace(new RegExp('('+t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','ig'),'<mark>$1</mark>')});return sn}
 function resultHTML(r,q){return `<a class="sres" href="${r.link}"><span class="pill">${esc(r.type)}</span> <b>${esc(r.title)}</b><span class="snip">${snippet(r,q)}</span></a>`}
-function search(q0){setColor('#475569');q0=q0||'';const types=['Q&A','Quick Q','Scenario','Notes','Video lesson','Hack','Quiz','Flashcard','Mock test','Calculator'];let type='';
+function search(q0){setColor('#475569');q0=q0||'';const types=['Past paper','Q&A','Quick Q','Scenario','Notes','Video lesson','Hack','Quiz','Flashcard','Mock test','Calculator'];let type='';
   main.innerHTML=`<div class="hero" style="--c:#475569"><h1>🔎 Search everything</h1><p>Notes, Q&amp;A, quick questions, scenarios, quizzes, flashcards, hacks, lesson subtitles, mock tests and calculators. Use several words to narrow (e.g. "A* admissible").</p></div>
   <div class="card"><input type="search" id="sq" placeholder="Search… e.g. entropy, tenure, forward checking" value="${esc(q0)}" autocomplete="off"><div class="tabs" id="sf" style="margin:10px 0 0"><button data-t="" class="on">All</button>${types.map(t=>`<button data-t="${esc(t)}">${esc(t)}</button>`).join('')}</div></div><div id="sr"></div>`;
   const run=()=>{const q=$('#sq').value.trim();if(q.length<2){$('#sr').innerHTML='<div class="card muted">Type at least 2 characters.</div>';return}
@@ -301,7 +347,9 @@ function route(){
   const h=(location.hash||'#/home').slice(2).split('/');
   if(h[0]==='t')topic(h[1],h[2]);
   else if(h[0]==='lab')window.renderLab(main,setColor);
-  else if(h[0]==='allquiz')allquiz();
+  else if(h[0]==='allquiz'||h[0]==='arena')arena();
+  else if(h[0]==='papers')papers();
+  else if(h[0]==='paper')paper(h[1],h[2]);
   else if(/^mock\d+$/.test(h[0])&&MOCKS[+h[0].slice(4)-1])mock(+h[0].slice(4));
   else if(h[0]==='plan')plan();
   else if(h[0]==='cheat')cheat();

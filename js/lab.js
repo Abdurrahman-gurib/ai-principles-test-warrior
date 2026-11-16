@@ -31,7 +31,7 @@ function search(L){
   <div class="note"><b>Conventions used</b>: graph search (expanded nodes are not re-expanded); ties broken <b>alphabetically</b>; goal test when a node is <b>removed</b> (expanded) from the frontier. BFS = FIFO queue, DFS = LIFO stack, UCS orders by g, Greedy by h, A* by f = g + h. Default = Sample Test 2025 graph.</div>
   <div class="row" style="align-items:flex-start"><div style="flex:1;min-width:200px"><label>Edges: "from to cost" per line</label><textarea id="ed" rows="8">${SAMPLE_EDGES}</textarea></div>
   <div style="flex:1;min-width:160px"><label>Heuristic h(n): "node value"</label><textarea id="hh" rows="8">${SAMPLE_H}</textarea></div></div>
-  <div class="row" style="margin-top:8px"><label>Start <input type="text" id="st" value="S" style="width:70px"></label><label>Goal <input type="text" id="gl" value="G" style="width:70px"></label>
+  <div class="row" style="margin-top:8px"><label>Start <input type="text" id="st" value="A" style="width:70px"></label><label>Goal <input type="text" id="gl" value="G" style="width:70px"></label>
   <label>Algorithm <select id="al"><option value="astar">A* (f = g + h)</option><option value="greedy">Greedy best-first (h)</option><option value="ucs">Uniform-cost / Dijkstra (g)</option><option value="bfs">Breadth-first (FIFO)</option><option value="dfs">Depth-first (LIFO)</option></select></label>
   <label class="row"><input type="checkbox" id="dir"> Directed edges</label></div><div id="so" style="margin-top:12px;overflow-x:auto"></div></div>`;
   const run=()=>{const adj=parseGraph($('#ed').value,$('#dir').checked),h=parseH($('#hh').value),s=$('#st').value.trim(),g=$('#gl').value.trim(),al=$('#al').value;
