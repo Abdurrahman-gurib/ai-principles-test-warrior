@@ -177,3 +177,35 @@ pre.code{background:var(--code);color:var(--codeink);padding:12px;border-radius:
 .topbar .spacer{flex:0 0 0}
 .topbar .iconbtn{flex-shrink:0}
 @media (max-width:480px){.topbar .brand span{display:none}.topbar{gap:6px;padding:10px 12px}}
+
+/* ---- global search ---- */
+.topbar{flex-wrap:wrap}
+.gs{position:relative;flex:1 1 260px;max-width:460px;min-width:0}
+.gs input{width:100%;padding:8px 12px;border-radius:999px;background:var(--soft)}
+.gsr{display:none;position:absolute;left:0;right:0;top:calc(100% + 6px);background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.18);max-height:70vh;overflow:auto;z-index:80}
+.gsr.open{display:block}
+.sres{display:block;padding:9px 12px;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink);font-size:.9rem}
+.sres:hover{background:var(--soft)}
+.sres .snip{display:block;color:var(--muted);font-size:.85rem;margin-top:3px}
+.sres.all{font-weight:700;color:var(--c)}
+mark{background:#fde68a;color:#78350f;border-radius:3px;padding:0 2px}
+@media (max-width:760px){.gs{display:none}}
+@media (min-width:761px){.sicon{display:none}}
+/* ---- progress strip ---- */
+.gprog{flex-basis:100%;position:relative;height:18px;background:var(--soft);border-radius:999px;overflow:hidden;margin-top:2px}
+.gprog i{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,#16a34a,#22c55e);transition:width .4s}
+.gprog span{position:relative;display:block;font-size:.72rem;font-weight:700;line-height:18px;padding:0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+nav.side{top:86px;height:calc(100vh - 86px)}
+@media (max-width:900px){nav.side{top:86px;height:calc(100vh - 86px)}}
+/* ---- step chips ---- */
+.steps-row{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.stp{font-size:.78rem;font-weight:700;padding:4px 9px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--muted);text-decoration:none}
+.stp.ok{background:#dcfce7;border-color:#16a34a;color:#14532d}
+table.dash{min-width:560px}
+table.dash td,table.dash th{text-align:center}
+table.dash td:first-child,table.dash th:first-child{text-align:left;white-space:nowrap}
+
+nav.side{top:var(--hdr,86px)!important;height:calc(100vh - var(--hdr,86px))!important}
+
+input[type=search]{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:8px 10px;width:100%}
+.gs input[type=search]{border-radius:999px;background:var(--soft)}

@@ -12,9 +12,11 @@
 <header class="topbar">
   <button class="iconbtn menu-btn" id="menuBtn" aria-label="Menu">☰</button>
   <a href="#/home" class="brand" style="text-decoration:none;color:inherit">⚔️ AI Principles <span>Test Warrior</span></a>
+  <div class="gs"><input type="search" id="gsq" placeholder="🔎 Search everything…" autocomplete="off" aria-label="Search everything"><div id="gsr" class="gsr"></div></div>
   <span class="spacer"></span>
-  <a class="iconbtn" href="#/search" aria-label="Search" style="text-decoration:none">🔎</a>
+  <a class="iconbtn sicon" href="#/search" aria-label="Search" style="text-decoration:none">🔎</a>
   <button class="iconbtn" id="themeBtn" aria-label="Toggle dark mode">🌓</button>
+  <div id="gprog" class="gprog" role="progressbar" aria-label="Overall progress"><i></i><span></span></div>
 </header>
 <div class="wrap">
   <nav class="side" id="side" aria-label="Topics"></nav>
@@ -22,6 +24,7 @@
 </div>
 <script src="js/lessons.js"></script>
 <script src="js/extras.js"></script>
+<script src="js/extras2.js"></script>
 <script src="js/mocks.js"></script>
 <script src="js/lab.js"></script>
 <script src="js/app.js"></script>
