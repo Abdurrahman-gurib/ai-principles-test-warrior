@@ -103,9 +103,9 @@ function entropy(L){
 function perc(L){
   L.innerHTML=`<div class="card"><h2>Perceptron learning rule (course spreadsheet)</h2>
   <div class="note">Ya = 1 if x1·w1 + x2·w2 − θ ≥ 0 else 0 · e = Yd − Ya · w<sub>i</sub> ← w<sub>i</sub> + α·x<sub>i</sub>·e · θ ← θ + α·(−1)·e. Inputs in order 00, 01, 10, 11.</div>
-  <div class="row"><label>Function <select id="fn"><option>AND</option><option>OR</option><option>XOR</option></select></label><label>α <input type="number" step="0.05" id="al" value="0.2" style="width:80px"></label>
+  <div class="row"><label>Function <select id="fn"><option>AND</option><option>OR</option><option>NAND</option><option>XOR</option></select></label><label>α <input type="number" step="0.05" id="al" value="0.2" style="width:80px"></label>
   <label>w1 <input type="number" step="0.1" id="w1" value="0.5" style="width:80px"></label><label>w2 <input type="number" step="0.1" id="w2" value="-0.2" style="width:80px"></label><label>θ <input type="number" step="0.1" id="th" value="0.3" style="width:80px"></label><label>Max epochs <input type="number" id="me" value="10" style="width:80px"></label></div><div id="po" style="margin-top:10px;overflow-x:auto"></div></div>`;
-  const run=()=>{const tbl={AND:[0,0,0,1],OR:[0,1,1,1],XOR:[0,1,1,0]}[$('#fn').value],X=[[0,0],[0,1],[1,0],[1,1]];let a=+$('#al').value,w1=+$('#w1').value,w2=+$('#w2').value,th=+$('#th').value,me=+$('#me').value,rows='',conv=0,it=0;
+  const run=()=>{const tbl={AND:[0,0,0,1],OR:[0,1,1,1],NAND:[1,1,1,0],XOR:[0,1,1,0]}[$('#fn').value],X=[[0,0],[0,1],[1,0],[1,1]];let a=+$('#al').value,w1=+$('#w1').value,w2=+$('#w2').value,th=+$('#th').value,me=+$('#me').value,rows='',conv=0,it=0;
     for(let ep=1;ep<=me;ep++){let errs=0;X.forEach(([x1,x2],k)=>{it++;const net=+(x1*w1+x2*w2).toFixed(3)-th,ya=net>=-1e-9?1:0,e=tbl[k]-ya;errs+=Math.abs(e);
       const n1=+(w1+a*x1*e).toFixed(4),n2=+(w2+a*x2*e).toFixed(4),nt=+(th-a*e).toFixed(4);
       rows+=`<tr${e?' style="background:#fff7ed"':''}><td>${it}</td><td>${k===0?ep:''}</td><td>${x1}</td><td>${x2}</td><td>${tbl[k]}</td><td>${f(w1)}</td><td>${f(w2)}</td><td>${f(th)}</td><td>${f(net,3)}</td><td>${ya}</td><td>${e}</td><td>${f(n1)}</td><td>${f(n2)}</td><td>${f(nt)}</td></tr>`;w1=n1;w2=n2;th=nt});

@@ -22,7 +22,7 @@ function setProg(id,patch){store.set('p:'+id,Object.assign(prog(id),patch));buil
 function pct(id){const p=prog(id);return Math.round(((p.watched?1:0)+(p.done?1:0)+(p.quiz>=80?1:p.quiz/80))/3*100)}
 
 /* ---------- nav ---------- */
-const EXTRA=[['lab','🧮','Calculation Lab','#0f766e'],['allquiz','⚡','Quick-fire quiz (all)','#9333ea'],['mock1','📝','Mock Test 1','#be123c'],['mock2','📝','Mock Test 2','#be123c'],['plan','📅','4-Day plan','#16a34a'],['cheat','📌','Cheat sheet','#ca8a04'],['search','🔎','Search notes','#475569']];
+const EXTRA=[['lab','🧮','Calculation Lab','#0f766e'],['allquiz','⚡','Quick-fire quiz (all)','#9333ea'],...MOCKS.map((m,i)=>['mock'+(i+1),'📝',m.title,'#be123c']),['plan','📅','4-Day plan','#16a34a'],['cheat','📌','Cheat sheet','#ca8a04'],['search','🔎','Search notes','#475569']];
 function buildNav(){
   const h=location.hash||'#/home';
   let s=`<a href="#/home" class="${h==='#/home'?'active':''}" style="--c:#e11d48"><span>🏠</span>Home</a><div class="grp">Topics</div>`;
@@ -251,8 +251,7 @@ function route(){
   if(h[0]==='t')topic(h[1],h[2]);
   else if(h[0]==='lab')window.renderLab(main,setColor);
   else if(h[0]==='allquiz')allquiz();
-  else if(h[0]==='mock1')mock(1);
-  else if(h[0]==='mock2')mock(2);
+  else if(/^mock\d+$/.test(h[0])&&MOCKS[+h[0].slice(4)-1])mock(+h[0].slice(4));
   else if(h[0]==='plan')plan();
   else if(h[0]==='cheat')cheat();
   else if(h[0]==='search')search();
