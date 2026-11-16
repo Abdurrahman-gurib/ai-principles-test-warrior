@@ -183,7 +183,7 @@ function home(){
 
 function topic(id,tab){
   const t=byId[id];if(!t)return home();setColor(t.color);tab=tab||'lesson';
-  const tabs=[['lesson','🎬 Video lesson'],['simple','🧒 Simple + Hacks'],['qa','❓ Q&A practice'],['notes','📖 Full notes'],['quiz','🧠 Quiz'],['cards','🃏 Flashcards']];
+  const tabs=[['lesson','🎬 Video lesson'],['simple','🧒 Simple + Hacks'],['qa','❓ Q&A practice'],['quick','⚡ Quick Qs'],['scen','🎭 Scenarios'],['notes','📖 Full notes'],['quiz','🧠 Quiz'],['cards','🃏 Flashcards']];
   const p=prog(id);
   main.innerHTML=`<div class="hero" style="--c:${t.color}"><h1>${t.emoji} ${t.title}</h1><p>Topic ${t.n} · source: ${t.src} · progress ${pct(id)}% ${p.quiz?`· best quiz ${p.quiz}%`:''}</p></div>
    <div class="tabs">${tabs.map(([k,n])=>`<button data-k="${k}" class="${k===tab?'on':''}">${n}</button>`).join('')}</div><div id="pane"></div>
@@ -197,6 +197,8 @@ function topic(id,tab){
      <div class="card" style="margin-top:14px"><h2>🧠 Hacks, mnemonics & exam cheats</h2>${t.hacks.map((h,n)=>`<div class="hack"><div class="n">${n+1}</div><div><b>${h[0]}</b>${h[1]}</div></div>`).join('')}</div>`}
   else if(tab==='notes'){pane.innerHTML=`<div class="card notes">${practiceSwitch(pane)}<div class="nb">${renderBlocks(blocks,false)}</div></div>`;const nb=$('.nb',pane);wireQA(nb);wirePractice(pane,nb)}
   else if(tab==='qa'){const n=blocks.filter(b=>b.k==='q').length;pane.innerHTML=`<div class="card notes"><p class="muted">${n} exam-style questions with full model answers. Answer first, then reveal.</p>${practiceSwitch(pane)}<div class="nb">${renderBlocks(blocks,true)}</div></div>`;const nb=$('.nb',pane);wireQA(nb);wirePractice(pane,nb)}
+  else if(tab==='quick'){pane.innerHTML=`<div class="card notes"><p class="muted">${t.quick.length} rapid-recall questions. Say the answer out loud, then tap to check.</p>${t.quick.map((x,i)=>`<div class="qa"><div class="q"><span>${i+1}.</span><span>${x[0]}</span></div><button class="btn sm ghost rv">👀 Show answer</button><div class="ans hide"><b style="color:var(--good)">${x[1]}</b></div></div>`).join('')}</div>`;$$('.qa',pane).forEach(q=>$('.rv',q).onclick=()=>$('.ans',q).classList.toggle('hide'))}
+  else if(tab==='scen'){pane.innerHTML=`<div class="card notes"><p class="muted">Real-world scenario questions, like part (a) of the paper. Plan your answer (technique → why → how → risk), then reveal the model answer.</p>${t.scen.length?t.scen.map((x,i)=>`<div class="qa"><div class="q"><span>S${i+1}.</span><span>${x[0]}</span></div><button class="btn sm ghost rv">👀 Show model answer</button><div class="ans hide"><p>${x[1]}</p></div></div>`).join(''):'<p>See the Q&amp;A tab for this topic.</p>'}</div>`;$$('.qa',pane).forEach(q=>$('.rv',q).onclick=()=>$('.ans',q).classList.toggle('hide'))}
   else if(tab==='quiz'){pane.innerHTML=quizHTML(t.quiz,id);wireQuiz(pane,t.quiz,id)}
   else if(tab==='cards'){pane.innerHTML='<div class="card"></div>';cardsUI($('.card',pane),t.cards,t.color)}
 }

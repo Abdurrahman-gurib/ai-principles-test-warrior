@@ -10,6 +10,16 @@ window.renderLab=function(main,setColor){
   <div class="tabs">${LABS.map(([k,n,cc])=>`<button data-k="${k}" class="${k===cur?'on':''}" style="${k===cur?'background:'+cc+';border-color:'+cc:''}">${n}</button>`).join('')}</div><div id="lab" class="calc"></div>`;
   $$('.tabs button',main).forEach(b=>b.onclick=()=>{location.hash='#/lab/'+b.dataset.k});
   ({search,dfid,entropy,perc,bp,sa,ga,csp,count}[cur]||search)($('#lab'));
+  const LG={search:[['g','cost paid so far from the start'],['h','estimated cost to the goal (given)'],['f = g + h','A* priority (lowest first)'],['Frontier','nodes generated but not yet expanded'],['Expanded','node taken off the frontier this step'],['Path / cost','follow the parents back; add the edge costs']],
+   dfid:[['Limit c','maximum depth allowed in this iteration'],['Visit order','order in which DFS reaches the nodes within the limit'],['Total generated','sum over all iterations (shows the repeat overhead)']],
+   entropy:[['[a, b]','counts of each class in a subset'],['E(S)','impurity: 0 pure, 1 = 50/50'],['(|Sv|/|S|)·E(Sv)','weighted entropy of branch v'],['Gain','E(S) minus the weighted branch entropies: pick the largest']],
+   perc:[['Σxw − θ','net input X'],['Ya','1 if X ≥ 0 else 0'],['e','Yd − Ya (0 = correct, no update)'],["w′, θ′","new values: w + α·x·e, θ − α·e"],['Epoch','4 rows = one pass over 00, 01, 10, 11'],['Converged','an epoch with every e = 0']],
+   bp:[['sig(z)','1/(1 + e^−z)'],['Y3, Y4','hidden outputs'],['Y5','network output'],['e','Yd − Y5'],['δ5','Y5(1 − Y5)e: output gradient'],['δ3, δ4','Y(1 − Y)·δ5·w: hidden gradients (use the OLD w35, w45)'],['New w','w + α·(input to that link)·δ(of the receiving neuron)'],['New θ','θ − α·δ']],
+   sa:[['Δ','how much worse the new solution is'],['T','current temperature'],['p','e^(−Δ/T) = acceptance chance'],['r','random number; accept if r < p'],['α','cooling factor (T ← αT)']],
+   ga:[['f(x)','fitness of individual x'],['P','f/Σf = slice of the roulette wheel'],['Cumulative','running total used to map a random r to a parent'],['Crossover point','bits before the cut come from one parent, the rest from the other']],
+   csp:[['D(X)','remaining legal values of X'],['Italic','already assigned'],['∅ (red)','empty domain → backtrack'],['Hidden dead end','two unassigned neighbours left with the same single value (AC-3 would catch it)']],
+   count:[['n!','orderings of n distinct items'],['(n − 1)!','round trips with a fixed start'],['Time','count ÷ checks per second']]};
+  const lg=LG[cur]||LG.search;$('#lab').insertAdjacentHTML('afterbegin',`<details class="card" open><summary><b>🔎 What every value in this calculator means</b></summary><div class="tblwrap"><table><tr><th>Value</th><th>Meaning</th></tr>${lg.map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td></tr>`).join('')}</table></div></details>`);
 };
 const SAMPLE_EDGES='S A 2\nS B 4\nA B 1\nA C 7\nB C 3\nB D 5\nC D 2\nC E 4\nD E 3\nD G 6\nE G 2',SAMPLE_H='S 10\nA 8\nB 6\nC 5\nD 4\nE 2\nG 0';
 function parseGraph(txt,directed){const adj={};txt.split('\n').map(l=>l.trim().split(/[\s,]+/)).filter(x=>x.length>=2&&x[0]).forEach(([a,b,w])=>{w=w===undefined?1:+w;(adj[a]=adj[a]||[]).push([b,w]);adj[b]=adj[b]||[];if(!directed)adj[b].push([a,w])});Object.values(adj).forEach(l=>l.sort((x,y)=>x[0]<y[0]?-1:1));return adj}
